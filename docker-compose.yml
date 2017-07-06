@@ -1,14 +1,31 @@
 version: '3'
 
 services:
-  db:
+  dblog:
     image: postgres
-  web:
-    build: .
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/plivocloud
+    restart: always
+    environment:
+      - POSTGRES_USER:'plivocfg'
+      - POSTGRES_DB:'plivo_cloud_logs'
     ports:
-      - "8000:8000"
+      - '5433:5433'
+  dbcfg:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER:'plivocfg'
+      - POSTGRES_DB:'plivo_cloud'
+    ports:
+      - '5432:5432'
+  redis:
+    image: redis
+  cache:
+    image: memcached
+  apiservice:
+    build: .
     depends_on:
-      - db
+      - dbcfg
+      - dblog
+      - cache
+      - redis
+
